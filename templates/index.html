@@ -4,11 +4,6 @@
     <title>Mr.D</title>
     <script src="/js/z.js"></script>
     <style>
-        .file-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
         .action-btn {
             padding: 8px 15px;
             background-color: #4CAF50;
@@ -26,18 +21,6 @@
         }
         .action-btn.blue:hover {
             background-color: #1976D2;
-        }
-        .file-list {
-            margin-top: 20px;
-        }
-        .file-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .file-name {
-            flex-grow: 1;
         }
         .upload-section {
             margin: 20px 0;
@@ -111,31 +94,20 @@
     <div class="upload-section">
         <input type="file" id="fileInput" style="display: none">
         <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <div>點擊或拖拽文件到此處</div>
+            <div>click</div>
             <div class="selected-file" id="selectedFile"></div>
         </div>
         <div class="upload-buttons">
-            <button class="action-btn" onclick="handleNormalUpload()">普通上傳</button>
-            <button class="action-btn blue" onclick="showPasswordModal()">加密壓縮</button>
+            <button class="action-btn" onclick="handleNormalUpload()">2</button>
+            <button class="action-btn blue" onclick="showPasswordModal()">1</button>
         </div>
-    </div>
-
-    <div class="file-list">
-        {{range .files}}
-        <div class="file-item">
-            <span class="file-name">{{.}}</span>
-            <div class="file-actions">
-                <a href="/f/{{.}}" class="action-btn" target="_blank">下載</a>
-            </div>
-        </div>
-        {{end}}
     </div>
 
     <!-- 密碼輸入彈窗 -->
     <div id="passwordModal" class="modal">
         <div class="modal-content">
-            <h3 class="modal-title">請輸入解壓密碼</h3>
-            <input type="password" id="password" placeholder="請輸入解壓縮密碼">
+            <h3 class="modal-title">papapa</h3>
+            <input type="password" id="password" placeholder="papapa">
             <div class="modal-buttons">
                 <button class="action-btn" onclick="closePasswordModal()">取消</button>
                 <button class="action-btn blue" onclick="handleEncryptedUpload()">確認</button>
