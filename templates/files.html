@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mr.D</title>
+    <style>
+        /* ... 保持原有样式 ... */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mr.D</h1>
+        <a href="/logout" class="logout-btn">登出</a>
+    </div>
+
+    {{if .error}}
+    <div class="error">{{.error}}</div>
+    {{end}}
+
+    <div class="action-form">
+        <form action="/add" method="post" enctype="multipart/form-data">
+            <div class="file-input-wrapper">
+                <input type="file" name="file" required>
+            </div>
+            <button type="submit">添加</button>
+        </form>
+    </div>
+
+    <div class="file-list">
+        <h2>文件列表</h2>
+        {{if .files}}
+        <ul>
+            {{range .files}}
+            <li><a href="/files/{{.}}">{{.}}</a></li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>暂无文件</p>
+        {{end}}
+    </div>
+</body>
+</html> 

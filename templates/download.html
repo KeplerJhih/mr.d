@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mr.D</title>
+</head>
+<body>
+    <a href="/logout">登出</a>
+    {{if .error}}
+    <p style="color: red;">{{.error}}</p>
+    {{end}}
+    <ul>
+    {{range .files}}
+        <li><a href="/downloads/{{.}}">{{.}}</a></li>
+    {{end}}
+    </ul>
+</body>
+</html> 

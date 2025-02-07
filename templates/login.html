@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+    {{if .error}}
+    <p style="color: red;">{{.error}}</p>
+    {{end}}
+    <form method="POST" action="/login">
+        <div>
+            <label>用户名：</label>
+            <input type="text" name="username" required>
+        </div>
+        <div>
+            <label>密码：</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit">登录</button>
+    </form>
+</body>
+</html> 
