@@ -2,8 +2,100 @@
 <html>
 <head>
     <title>Mr.D</title>
+    <script src="/js/z.js"></script>
     <style>
-        /* ... 样式保持不变 ... */
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .action-btn {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+        .action-btn.blue {
+            background-color: #2196F3;
+        }
+        .action-btn.blue:hover {
+            background-color: #1976D2;
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .file-name {
+            flex-grow: 1;
+        }
+        .upload-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .upload-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .selected-file {
+            margin-top: 10px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -16,14 +108,195 @@
     <div class="error">{{.error}}</div>
     {{end}}
 
-    <div class="action-form">
-        <form action="/add" method="post" enctype="multipart/form-data">
-            <div class="file-input-wrapper">
-                <input type="file" name="file" required>
-            </div>
-            <button type="submit">添加</button>
-        </form>
+    <div class="upload-section">
+        <input type="file" id="fileInput" style="display: none">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div>點擊或拖拽文件到此處</div>
+            <div class="selected-file" id="selectedFile"></div>
+        </div>
+        <div class="upload-buttons">
+            <button class="action-btn" onclick="handleNormalUpload()">普通上傳</button>
+            <button class="action-btn blue" onclick="showPasswordModal()">加密壓縮</button>
+        </div>
     </div>
 
+    <div class="file-list">
+        {{range .files}}
+        <div class="file-item">
+            <span class="file-name">{{.}}</span>
+            <div class="file-actions">
+                <a href="/f/{{.}}" class="action-btn" target="_blank">下載</a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- 密碼輸入彈窗 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">請輸入解壓密碼</h3>
+            <input type="password" id="password" placeholder="請輸入解壓縮密碼">
+            <div class="modal-buttons">
+                <button class="action-btn" onclick="closePasswordModal()">取消</button>
+                <button class="action-btn blue" onclick="handleEncryptedUpload()">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const passwordModal = document.getElementById('passwordModal');
+
+        fileInput.addEventListener('change', function(e) {
+            if (this.files[0]) {
+                selectedFile.textContent = '已選擇: ' + this.files[0].name;
+            }
+        });
+
+        // 拖拽上傳
+        document.querySelector('.upload-area').addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = '#2196F3';
+        });
+
+        document.querySelector('.upload-area').addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = '#ddd';
+        });
+
+        document.querySelector('.upload-area').addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = '#ddd';
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                selectedFile.textContent = '已選擇: ' + e.dataTransfer.files[0].name;
+            }
+        });
+
+        function showPasswordModal() {
+            if (!fileInput.files[0]) {
+                alert('請先選擇文件');
+                return;
+            }
+            passwordModal.style.display = 'block';
+        }
+
+        function closePasswordModal() {
+            passwordModal.style.display = 'none';
+            document.getElementById('password').value = '';
+        }
+
+        async function handleNormalUpload() {
+            if (!fileInput.files[0]) {
+                alert('請先選擇文件');
+                return;
+            }
+            await uploadFile(false);
+        }
+
+        async function handleEncryptedUpload() {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                alert('請輸入密碼');
+                return;
+            }
+            await createEncryptedZip(password);
+            closePasswordModal();
+        }
+
+        function clearFileInput() {
+            fileInput.value = '';
+            selectedFile.textContent = '';
+        }
+
+        async function createEncryptedZip(password) {
+            try {
+                const file = fileInput.files[0];
+                if (!file) {
+                    throw new Error('未選擇文件');
+                }
+
+                // 生成20位隨機字符的檔名（只使用數字和字母）
+                const randomStr = Array.from(crypto.getRandomValues(new Uint8Array(20)))
+                    .map(byte => {
+                        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+                        return chars[byte % chars.length];
+                    })
+                    .join('');
+
+                // 創建 zip
+                const blobWriter = new zip.BlobWriter();  // 移除 MIME type
+                const writer = new zip.ZipWriter(blobWriter, {
+                    bufferedWrite: true,
+                    password: password,
+                    useWebWorkers: true,
+                    zipCrypto: true  // 使用 ZIP 加密
+                });
+
+                // 添加文件到 zip
+                await writer.add(file.name, new zip.BlobReader(file), {
+                    password: password,
+                    level: 9,  // 最高壓縮等級
+                    useWebWorkers: true
+                });
+
+                // 完成壓縮
+                await writer.close();
+
+                // 獲取壓縮後的內容並強制設置為二進制數據
+                const zipBlob = new Blob([await blobWriter.getData()], { 
+                    type: 'application/octet-stream' 
+                });
+
+                // 創建下載連結（使用純隨機檔名，不帶副檔名）
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(zipBlob);
+                downloadLink.setAttribute('download', randomStr);  // 純隨機檔名，不帶副檔名
+                
+                // 執行下載
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(downloadLink.href);
+
+                clearFileInput();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('處理失敗：' + error.message);
+            }
+        }
+
+        async function uploadFile(isEncrypted, password = '') {
+            try {
+                const file = fileInput.files[0];
+                if (!file) {
+                    throw new Error('未選擇文件');
+                }
+
+                const formData = new FormData();
+                formData.append('file', file, file.name);
+
+                const response = await fetch('/add', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    clearFileInput();  // 清除文件選擇
+                    window.location.reload();
+                } else {
+                    throw new Error('上傳失敗');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('處理失敗：' + error.message);
+            }
+        }
+    </script>
 </body>
 </html> 

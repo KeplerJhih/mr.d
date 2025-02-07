@@ -108,11 +108,12 @@ func main() {
 
 	r := gin.Default()
 
-	// 加载模板
-	r.LoadHTMLGlob("templates/*")
+	// 加载模板，只加載 html 文件
+	r.LoadHTMLGlob("templates/*.html")
 
-	// 静态文件服务
+	// 靜態文件服務
 	r.Static("/f", "./storage")
+	r.Static("/js", "./templates/js") // 為 js 文件提供靜態服務
 
 	// 设置上传文件大小限制 (默认 32 MB)
 	r.MaxMultipartMemory = 8 << 20 // 8 MB
